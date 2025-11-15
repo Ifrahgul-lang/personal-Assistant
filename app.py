@@ -12,7 +12,7 @@ st.set_page_config(
 
 # --------------------- GROQ CLIENT SETUP ---------------------
 # Get API key from environment variable
-GROQ_API_KEY = os.getenv("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")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not GROQ_API_KEY:
     st.sidebar.error("❌ Groq API key not found. Please set the environment variable GROQ_API_KEY.")
@@ -41,7 +41,7 @@ class PersonalAssistant:
         )
 
     def get_response(self, user_input: str) -> str:
-        # Add user message
+        # Add the user message
         self.conversation_history.append({"role": "user", "content": user_input})
 
         # Prepare messages (system + last 6 messages)
