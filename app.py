@@ -1,9 +1,8 @@
 import streamlit as st
 import groq
 import os
-import json
 
-# Set page configuration
+# --------------------- PAGE CONFIG ---------------------
 st.set_page_config(
     page_title="Personal Assistant",
     page_icon="🤖",
@@ -11,15 +10,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize Groq client with your API key
+# --------------------- GROQ API SETUP ---------------------
 GROQ_API_KEY = "gsk_4pz0G8cY9iV0fVw2h8K3WGdyb3FYhVfHh8a3w0TQY1qL1jXQ1aK"
 
-# Configure Groq client
 try:
-    client = groq.Groq(api_key=GROQ_API_KEY)
+    client = groq.Client(api_key=GROQ_API_KEY)
+    st.sidebar.success("✅ Groq API Connected Successfully")
 except Exception as e:
-    st.error(f"Failed to initialize Groq client: {e}")
+    st.error(f"❌ Failed to initialize Groq client: {e}")
+    st.stop()
 
+# --------------------- PERSONAL ASSISTANT CLASS ---------------------
 class PersonalAssistant:
     def __init__(self):
         self.conversation_history = []
@@ -50,13 +51,13 @@ class PersonalAssistant:
             
             # Call Groq API
             response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",  # You can also use "mixtral-8x7b-32768" or "gemma-7b-it"
+                model="llama-3.1-8b-instant",
                 messages=messages,
                 max_tokens=1024,
                 temperature=0.7
             )
             
-            assistant_response = response.choices[0].message.content
+            assistant_response = response.choices[0].message["content"]
             
             # Add assistant response to conversation history
             self.conversation_history.append({"role": "assistant", "content": assistant_response})
@@ -70,32 +71,15 @@ class PersonalAssistant:
         """Clear conversation history"""
         self.conversation_history = []
 
+# --------------------- STREAMLIT APP ---------------------
 def main():
-    # Test API connection
-    try:
-        # Simple test to verify the API key works
-        models = client.models.list()
-        api_status = "✅ Groq API Connected Successfully"
-        st.sidebar.success(api_status)
-    except Exception as e:
-        st.error(f"""
-        ❌ Groq API Connection Error: {str(e)}
-        
-        Please check:
-        1. Your Groq API key is correct and active
-        2. You have sufficient credits in your Groq account
-        
-        Get your API key from: https://console.groq.com/keys
-        """)
-        return
-
     # Initialize session state
     if 'assistant' not in st.session_state:
         st.session_state.assistant = PersonalAssistant()
     if 'messages' not in st.session_state:
         st.session_state.messages = []
     
-    # Sidebar
+    # --------------------- SIDEBAR ---------------------
     with st.sidebar:
         st.title("🤖 Personal Assistant")
         st.markdown("---")
@@ -113,11 +97,8 @@ def main():
         - 💡 Suggestions & ideas
         """)
         
-        # Model selection
         st.markdown("---")
         st.subheader("Settings")
-        
-        st.markdown("---")
         if st.button("🔄 Clear Conversation", use_container_width=True):
             st.session_state.assistant.clear_history()
             st.session_state.messages = []
@@ -126,9 +107,9 @@ def main():
         st.markdown("---")
         st.caption("Powered by Groq LLaMA 3.1 8B Instant")
     
-    # Main content area
+    # --------------------- MAIN CHAT AREA ---------------------
     st.title("💬 Personal Assistant")
-    st.markdown("Hello! I'm your personal assistant powered by Groq's fast AI models. How can I help you today?")
+    st.markdown("Hello! I'm your personal assistant powered by Groq's AI models. How can I help you today?")
     
     # Display conversation history
     for message in st.session_state.messages:
@@ -151,7 +132,7 @@ def main():
         # Add assistant response to messages
         st.session_state.messages.append({"role": "assistant", "content": response})
 
-    # Quick action buttons
+    # --------------------- QUICK ACTIONS ---------------------
     st.markdown("---")
     st.subheader("Quick Actions")
     
