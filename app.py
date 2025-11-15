@@ -1,5 +1,5 @@
 import streamlit as st
-import groq  # Groq Python SDK
+import groq  # latest Groq Python SDK
 
 # --------------------- PAGE CONFIG ---------------------
 st.set_page_config(
@@ -10,11 +10,11 @@ st.set_page_config(
 )
 
 # --------------------- GROQ CLIENT SETUP ---------------------
-# Use your API key here directly
+# Use your Groq API key here
 GROQ_API_KEY = "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"
 
 try:
-    client = groq.Groq(api_key=GROQ_API_KEY)  # Correct initialization
+    client = groq.Groq(api_key=GROQ_API_KEY)  # ✅ Correct way
     st.sidebar.success("✅ Groq API Connected Successfully")
 except Exception as e:
     st.sidebar.error(f"❌ Failed to initialize Groq client: {e}")
@@ -36,15 +36,12 @@ class PersonalAssistant:
         )
 
     def get_response(self, user_input: str) -> str:
-        # Add user message
         self.conversation_history.append({"role": "user", "content": user_input})
 
-        # Prepare messages (system + last 6 messages)
         messages = [{"role": "system", "content": self.system_prompt}]
         messages.extend(self.conversation_history[-6:])
 
         try:
-            # Use groq.Groq client
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=messages,
@@ -55,7 +52,6 @@ class PersonalAssistant:
         except Exception as e:
             assistant_message = f"⚠️ An error occurred: {e}"
 
-        # Add assistant message to history
         self.conversation_history.append({"role": "assistant", "content": assistant_message})
         return assistant_message
 
@@ -64,7 +60,6 @@ class PersonalAssistant:
 
 # --------------------- STREAMLIT APP ---------------------
 def main():
-    # Initialize session state
     if "assistant" not in st.session_state:
         st.session_state.assistant = PersonalAssistant()
     if "messages" not in st.session_state:
@@ -85,13 +80,12 @@ def main():
         st.markdown("---")
         st.caption("Model: llama-3.1-8b-instant")
 
-    # Main chat area
+    # Chat area
     st.title("💬 Chat with Your Assistant")
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # User input
     if prompt := st.chat_input("Type your message here..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
@@ -129,6 +123,9 @@ def main():
 if __name__ == "__main__":
     main()
 
+
+   
+    
 
 
           
