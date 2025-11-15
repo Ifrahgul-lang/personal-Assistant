@@ -10,11 +10,11 @@ st.set_page_config(
 )
 
 # --------------------- GROQ CLIENT SETUP ---------------------
-# HARD-CODE YOUR API KEY HERE (for testing only)
+# Use your API key here directly
 GROQ_API_KEY = "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"
 
 try:
-    client = groq.Client(api_key=GROQ_API_KEY)
+    client = groq.Groq(api_key=GROQ_API_KEY)  # Correct initialization
     st.sidebar.success("✅ Groq API Connected Successfully")
 except Exception as e:
     st.sidebar.error(f"❌ Failed to initialize Groq client: {e}")
@@ -36,7 +36,7 @@ class PersonalAssistant:
         )
 
     def get_response(self, user_input: str) -> str:
-        # Add the user message
+        # Add user message
         self.conversation_history.append({"role": "user", "content": user_input})
 
         # Prepare messages (system + last 6 messages)
@@ -44,6 +44,7 @@ class PersonalAssistant:
         messages.extend(self.conversation_history[-6:])
 
         try:
+            # Use groq.Groq client
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=messages,
@@ -92,18 +93,15 @@ def main():
 
     # User input
     if prompt := st.chat_input("Type your message here..."):
-        # Show user message
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Get assistant response
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 response = st.session_state.assistant.get_response(prompt)
                 st.markdown(response)
 
-        # Save assistant response
         st.session_state.messages.append({"role": "assistant", "content": response})
 
     # Quick actions
@@ -130,3 +128,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+          
+    
+   
