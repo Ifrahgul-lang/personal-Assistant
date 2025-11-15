@@ -1,6 +1,5 @@
-import os
 import streamlit as st
-import groq  # Correct import for Groq Python SDK
+import groq  # Groq Python SDK
 
 # --------------------- PAGE CONFIG ---------------------
 st.set_page_config(
@@ -11,19 +10,11 @@ st.set_page_config(
 )
 
 # --------------------- GROQ CLIENT SETUP ---------------------
-# Load API key from environment variable
-GROQ_API_KEY = os.getenv("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")  # Make sure this environment variable is set!
-
-if not GROQ_API_KEY:
-    st.sidebar.error(
-        "❌ Groq API key not found. Please set the environment variable GROQ_API_KEY.\n\n"
-        "Windows (PowerShell): setx GROQ_API_KEY \"YOUR_API_KEY\"\n"
-        "Linux/macOS: export GROQ_API_KEY=\"YOUR_API_KEY\""
-    )
-    st.stop()
+# HARD-CODE YOUR API KEY HERE (for testing only)
+GROQ_API_KEY = "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"
 
 try:
-    client = groq.Client(api_key=GROQ_API_KEY)  # Correct client initialization
+    client = groq.Client(api_key=GROQ_API_KEY)
     st.sidebar.success("✅ Groq API Connected Successfully")
 except Exception as e:
     st.sidebar.error(f"❌ Failed to initialize Groq client: {e}")
@@ -83,7 +74,7 @@ def main():
         st.title("🤖 Personal Assistant")
         st.markdown("---")
         st.subheader("About")
-        st.write("Your AI‑powered personal assistant (powered by Groq).")
+        st.write("Your AI-powered personal assistant (powered by Groq).")
         st.markdown("---")
         st.subheader("Settings")
         if st.button("🔄 Clear Conversation", use_container_width=True):
@@ -91,7 +82,7 @@ def main():
             st.session_state.messages = []
             st.experimental_rerun()
         st.markdown("---")
-        st.caption("Model: llama‑3.1‑8b‑instant")
+        st.caption("Model: llama-3.1-8b-instant")
 
     # Main chat area
     st.title("💬 Chat with Your Assistant")
@@ -139,4 +130,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
