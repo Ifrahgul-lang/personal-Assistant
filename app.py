@@ -1,7 +1,6 @@
 import streamlit as st
-import openai
+import groq
 import os
-from datetime import datetime
 import json
 
 # Set page configuration
@@ -12,13 +11,14 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize OpenAI client with your API key directly
-API_KEY = "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"
+# Initialize Groq client with your API key
+GROQ_API_KEY = "gsk_4pz0G8cY9iV0fVw2h8K3WGdyb3FYhVfHh8a3w0TQY1qL1jXQ1aK"
 
+# Configure Groq client
 try:
-    client = openai.OpenAI(api_key=API_KEY)
+    client = groq.Groq(api_key=GROQ_API_KEY)
 except Exception as e:
-    st.error(f"Failed to initialize OpenAI client: {e}")
+    st.error(f"Failed to initialize Groq client: {e}")
 
 class PersonalAssistant:
     def __init__(self):
@@ -39,7 +39,7 @@ class PersonalAssistant:
         Always be polite, concise, and helpful. If you don't know something, be honest about it."""
     
     def get_response(self, user_input):
-        """Get response from OpenAI API"""
+        """Get response from Groq API"""
         try:
             # Add user message to conversation history
             self.conversation_history.append({"role": "user", "content": user_input})
@@ -48,11 +48,11 @@ class PersonalAssistant:
             messages = [{"role": "system", "content": self.system_prompt}]
             messages.extend(self.conversation_history[-6:])  # Keep last 6 messages for context
             
-            # Call OpenAI API
+            # Call Groq API
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="llama-3.1-8b-instant",  # You can also use "mixtral-8x7b-32768" or "gemma-7b-it"
                 messages=messages,
-                max_tokens=500,
+                max_tokens=1024,
                 temperature=0.7
             )
             
@@ -63,14 +63,8 @@ class PersonalAssistant:
             
             return assistant_response
             
-        except openai.AuthenticationError:
-            return "❌ Authentication Error: Please check if your API key is valid and active."
-        except openai.RateLimitError:
-            return "⏰ Rate Limit Exceeded: Please wait a moment before sending another message."
-        except openai.APIError as e:
-            return f"🔧 API Error: {str(e)}"
         except Exception as e:
-            return f"⚠️ An unexpected error occurred: {str(e)}"
+            return f"⚠️ An error occurred: {str(e)}"
     
     def clear_history(self):
         """Clear conversation history"""
@@ -81,21 +75,18 @@ def main():
     try:
         # Simple test to verify the API key works
         models = client.models.list()
-        api_status = "✅ API Connected Successfully"
+        api_status = "✅ Groq API Connected Successfully"
         st.sidebar.success(api_status)
-    except openai.AuthenticationError:
-        st.error("""
-        ❌ Invalid API Key!
+    except Exception as e:
+        st.error(f"""
+        ❌ Groq API Connection Error: {str(e)}
         
         Please check:
-        1. Your API key is correct and active
-        2. You have sufficient credits in your OpenAI account
+        1. Your Groq API key is correct and active
+        2. You have sufficient credits in your Groq account
         
-        Get a new API key from: https://platform.openai.com/account/api-keys
+        Get your API key from: https://console.groq.com/keys
         """)
-        return
-    except Exception as e:
-        st.error(f"❌ API Connection Error: {str(e)}")
         return
 
     # Initialize session state
@@ -110,7 +101,7 @@ def main():
         st.markdown("---")
         
         st.subheader("About")
-        st.write("Your AI-powered personal assistant ready to help with various tasks!")
+        st.write("Your AI-powered personal assistant powered by Groq's fast LLMs!")
         
         st.markdown("---")
         st.subheader("Capabilities")
@@ -122,6 +113,10 @@ def main():
         - 💡 Suggestions & ideas
         """)
         
+        # Model selection
+        st.markdown("---")
+        st.subheader("Settings")
+        
         st.markdown("---")
         if st.button("🔄 Clear Conversation", use_container_width=True):
             st.session_state.assistant.clear_history()
@@ -129,11 +124,11 @@ def main():
             st.rerun()
         
         st.markdown("---")
-        st.caption("Powered by OpenAI GPT-3.5 Turbo")
+        st.caption("Powered by Groq LLaMA 3.1 8B Instant")
     
     # Main content area
     st.title("💬 Personal Assistant")
-    st.markdown("Hello! I'm your personal assistant. How can I help you today?")
+    st.markdown("Hello! I'm your personal assistant powered by Groq's fast AI models. How can I help you today?")
     
     # Display conversation history
     for message in st.session_state.messages:
@@ -162,41 +157,29 @@ def main():
     
     col1, col2, col3, col4 = st.columns(4)
     
-    with col1:
-        if st.button("💡 Brainstorm Ideas", use_container_width=True):
-            with st.chat_message("user"):
-                st.markdown("Help me brainstorm some creative ideas for a project")
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    response = st.session_state.assistant.get_response("Help me brainstorm some creative ideas for a project")
-                    st.markdown(response)
+    quick_actions = {
+        "💡 Brainstorm Ideas": "Help me brainstorm some creative ideas for a project",
+        "📝 Writing Help": "Help me improve my writing skills and give me tips",
+        "🔍 Explain Concept": "Explain machine learning in simple terms",
+        "🎯 Daily Tips": "Give me some productivity tips for today"
+    }
     
-    with col2:
-        if st.button("📝 Writing Help", use_container_width=True):
-            with st.chat_message("user"):
-                st.markdown("Help me improve my writing skills")
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    response = st.session_state.assistant.get_response("Help me improve my writing skills")
-                    st.markdown(response)
-    
-    with col3:
-        if st.button("🔍 Explain Concept", use_container_width=True):
-            with st.chat_message("user"):
-                st.markdown("Explain machine learning in simple terms")
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    response = st.session_state.assistant.get_response("Explain machine learning in simple terms")
-                    st.markdown(response)
-    
-    with col4:
-        if st.button("🎯 Daily Tips", use_container_width=True):
-            with st.chat_message("user"):
-                st.markdown("Give me some productivity tips for today")
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    response = st.session_state.assistant.get_response("Give me some productivity tips for today")
-                    st.markdown(response)
+    for col, (button_text, prompt_text) in zip([col1, col2, col3, col4], quick_actions.items()):
+        with col:
+            if st.button(button_text, use_container_width=True):
+                # Add user message
+                st.session_state.messages.append({"role": "user", "content": prompt_text})
+                with st.chat_message("user"):
+                    st.markdown(prompt_text)
+                
+                # Get and display response
+                with st.chat_message("assistant"):
+                    with st.spinner("Thinking..."):
+                        response = st.session_state.assistant.get_response(prompt_text)
+                        st.markdown(response)
+                
+                # Add assistant response
+                st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main()
