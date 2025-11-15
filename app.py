@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from groq import Groq  # Correct import
+import groq  # Correct import for the Groq Python SDK
 
 # --------------------- PAGE CONFIG ---------------------
 st.set_page_config(
@@ -11,15 +11,15 @@ st.set_page_config(
 )
 
 # --------------------- GROQ CLIENT SETUP ---------------------
-# Get API key from environment variable
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# Load API key from environment variable
+GROQ_API_KEY = os.getenv("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")
 
 if not GROQ_API_KEY:
     st.sidebar.error("❌ Groq API key not found. Please set the environment variable GROQ_API_KEY.")
     st.stop()
 
 try:
-    client = Groq(api_key=GROQ_API_KEY)
+    client = groq.Client(api_key=GROQ_API_KEY)  # Correct initialization
     st.sidebar.success("✅ Groq API Connected Successfully")
 except Exception as e:
     st.sidebar.error(f"❌ Failed to initialize Groq client: {e}")
@@ -132,7 +132,6 @@ def main():
                         resp = st.session_state.assistant.get_response(text)
                         st.markdown(resp)
                 st.session_state.messages.append({"role": "assistant", "content": resp})
-
 
 if __name__ == "__main__":
     main()
